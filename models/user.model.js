@@ -5,7 +5,6 @@ import bcrypt from "bcrypt";
 const UserSchema = new mongoose.Schema({
     username: {
         type: String,
-        required: true,
         unique: true
     },
     email: {
@@ -15,7 +14,16 @@ const UserSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
+    },
+    provider: {
+        type: String,
+        enum: ["local", "google"]
+    },
+    providerId: {
+        type: String
+    },
+    avatar: {
+        type: String
     },
     challenges: [
         {
@@ -29,16 +37,28 @@ const UserSchema = new mongoose.Schema({
             ref: 'solution'
         }
     ],
+    streak: {
+        current: { type: Number, default: 0 },
+        longest: { type: Number, default: 0 },
+        lastSolvedDate: { type: String, default: null }
+    },
+    activity: [
+        {
+            date: { type: String },
+            active: { type: Boolean, default: false },
+            count: { type: Number, default: 0 }
+        }
+    ],
     token: {
         type: String
     }
 }, { timestamps: true });
 
 UserSchema.pre("save", async function (next) {
+    if (!this.isModified("password") || !this.password) return next();
+    
     // if the password is changed, it will be hashed. otherwise skipped
-    if (this.isModified("password")) {
-        this.password = await bcrypt.hash(this.password, 10);
-    }
+    this.password = await bcrypt.hash(this.password, 10);
     
     next()
 })
