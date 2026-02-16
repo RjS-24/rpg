@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 const UserSchema = new mongoose.Schema({
     username: {
         type: String,
-        unique: true
+        unique: false
     },
     email: {
         type: String,
@@ -74,5 +74,6 @@ UserSchema.methods.generateToken = function() {
 }
 
 const UserModel = mongoose.model('user', UserSchema);
+
 
 export default UserModel;
